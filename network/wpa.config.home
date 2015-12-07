@@ -1,0 +1,5 @@
+network={
+	ssid="HOME-1B54"
+	key_mgmt=WPA-PSK
+	psk="0BF509CBDAA6268D"
+}

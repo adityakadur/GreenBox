@@ -1,0 +1,5 @@
+network={
+	ssid="GTother"
+	key_mgmt=WPA-PSK
+	psk="GeorgeP@1927"
+}
