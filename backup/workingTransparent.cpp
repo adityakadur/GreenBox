@@ -1,17 +1,34 @@
+//
+//    Copyright 2013 Christopher D. McMurrough
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 
 /***********************************************************************************************************************
 FILENAME:   openni2_pcl.cpp
-AUTHORS:    Aditya Kadur
-Based on Examples by Christopher D. McMurrough
+AUTHORS:    Christopher D. McMurrough
 
 DESCRIPTION:
 Provides an example of using OpenNI2Grabber to assemble point clouds from depth and rgb images
 
+REVISION HISTORY:
+08.12.2013  CDM     original file creation
+09.01.2013  CDM     published under GPL
 ***********************************************************************************************************************/
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -24,8 +41,9 @@ Provides an example of using OpenNI2Grabber to assemble point clouds from depth 
 
 #include <string>
 
-using namespace cv;
-
+/*
+ * Lesson 3: SDL Extension Libraries
+ */
 //Screen attributes
 const int SCREEN_WIDTH  = 640;
 const int SCREEN_HEIGHT = 480;
@@ -87,32 +105,6 @@ void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y){
 }
 
 int main(int, char**){
-
-/***************** Setup OpenNI **********************************/
-
-    OpenNI2Grabber grabber;
-    bool isRunning = false;
-    // attempt to start the grabber
-    if(grabber.initialize(true, false, true, false))
-    {
-        if(grabber.start())
-        {
-            std::cout<<"Grabber is running...\n";
-            isRunning = grabber.isRunning();
-        }
-    }
-    else
-    {
-        std::cout << "Unable to initialize OpenNI2Grabber, program terminating!" << std::endl;
-        return 0;
-    }
-
-/*********** Setup OpenCV *******************/
-    Mat depthImage, colorImage;
-    Mat depthImageDraw;
-
-/*************Setup PCL ********************/
-
 	//Start up SDL and make sure it went ok
 	if (SDL_Init(SDL_INIT_VIDEO) != 0){
 		logSDLError(std::cout, "SDL_Init");
@@ -134,50 +126,18 @@ int main(int, char**){
 		return 1;
 	}
 
-/********************************************/
-
 	//The textures we'll be using
-	bool firstframe = true;
-	SDL_Texture *background = loadTexture("green.jpg", renderer);
-	SDL_Texture *image = loadTexture("mudTile.jpg", renderer);
-	SDL_Texture *flowers = loadTexture("unnamed.png", renderer);
+
+	SDL_Texture *background = loadTexture("grass2.jpg", renderer);
+	SDL_Texture *image = loadTexture("image.png", renderer);
 	//Make sure they both loaded ok
 	if (background == NULL || image == NULL){
 		SDL_Quit();
 		return 1;
 	}
 
-	SDL_Event e;
 	//A sleepy rendering loop, wait for 3 seconds and render and present the screen each time
-	while(isRunning){
-
-		// acquire an image frame
-        if(grabber.waitForFrame(1000))
-        {
-            // display the acquired images
-            if(grabber.getDepthFrame(depthImage))
-            {
-                // multiply the 11-bit depth values by 32 to extend the color range to a full 16-bits
-                depthImage.convertTo(depthImageDraw, -1, 32);
-                pyrDown(depthImageDraw, depthImageDraw);
-                pyrDown(depthImageDraw, depthImageDraw);
-                pyrDown(depthImageDraw, depthImageDraw);
-                pyrDown(depthImage, depthImage);
-                pyrDown(depthImage, depthImage);
-                pyrDown(depthImage, depthImage);
-                cv::imshow("depth", depthImageDraw);
-                std::cout << depthImage.at<unsigned short>(40,30) <<std::endl;
-            }
-        }
-
-        // check for program termination
-        char key = (char) cv::waitKey(1);
-        if(key == 'q' || key == 'Q' || key == 27)
-        {
-            std::cout << "Terminating program..." << std::endl;
-            isRunning = false;
-        }
-
+	for (int i = 0; i < 3; ++i){
 		//Clear the window
 		SDL_RenderClear(renderer);
 
@@ -197,52 +157,18 @@ int main(int, char**){
 		//of it's top left corner so that the image will be centered
 		int iW, iH;
 		SDL_QueryTexture(image, NULL, NULL, &iW, &iH);
-		for(int x=0; x<640/8; x++)
-			for(int y=0; y<480/8; y++){
-				if(depthImage.at<unsigned short>(y,x) > 500 && depthImage.at<unsigned short>(y,x) < 900)
-					renderTexture(image, renderer, x*8, y*8);
-			}
-		// int x = SCREEN_WIDTH / 2 - iW / 2;
-		// int y = SCREEN_HEIGHT / 2 - iH / 2;
-		// renderTexture(image, renderer, x, y);
-
-		SDL_QueryTexture(flowers, NULL, NULL, &iW, &iH);
 		int x = SCREEN_WIDTH / 2 - iW / 2;
 		int y = SCREEN_HEIGHT / 2 - iH / 2;
-		SDL_Rect dst;
-		dst.x = x;
-		dst.y = y;
-		dst.w = iW/2;
-		dst.h = iH;
-		SDL_Rect clip;
-		clip.x = (firstframe? 0:iW/2);;
-		clip.y = 0;
-		clip.w = iW/2;
-		clip.h = iH;
-		SDL_RenderCopy(renderer, flowers, &clip, &dst);
-		firstframe =!firstframe;
+		renderTexture(image, renderer, x, y);
+
 		//Update the screen
 		SDL_RenderPresent(renderer);
-		//For exit - Handle events on queue
-		while( SDL_PollEvent( &e ) != 0 )
-		{
-			//User requests quit
-			if( e.type == SDL_QUIT )
-			{
-				isRunning = false;
-			}
-			//Handle key presses
-			else if( e.type == SDL_KEYDOWN )
-			{
-				//Increase alpha on w
-				if( e.key.keysym.sym == SDLK_q )
-					isRunning = false;			
-			}
-		}
+		//Take a quick break after all that hard work
+		SDL_Delay(3000);
 	}
 
-	SDL_DestroyTexture(image);
-	grabber.stop();	
+	//Destroy the various items
+
 	IMG_Quit();
 	SDL_Quit();
 

@@ -58,6 +58,7 @@ CMakeFiles/openni2_pcl.dir/openni2_pcl.cpp.o: openni2_pcl.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/openni2_pcl.dir/openni2_pcl.cpp.o"
 	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/openni2_pcl.dir/openni2_pcl.cpp.o -c /home/odroid/SDL/openNI/openni2_pcl.cpp
 
+
 CMakeFiles/openni2_pcl.dir/openni2_pcl.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/openni2_pcl.dir/openni2_pcl.cpp.i"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/odroid/SDL/openNI/openni2_pcl.cpp > CMakeFiles/openni2_pcl.dir/openni2_pcl.cpp.i
